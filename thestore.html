@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SE 3316 - Lab 3</title>
+        <meta charset="UTF-8">
+       
+    </head>
+    <body id="body">
+        <p>Welcome to the Store !</p>
+        <p>Inventory</p>
+        <ul id="inventory">
+        </ul>
+        <p id="buttons"></p>
+        <div id="div"></div>
+    </body>
+    <script type='text/javascript'>
+            var body = document.getElementById("body"); //initialize elements that will be manipulated
+            var div = document.getElementById("div");
+            var yup = document.getElementById("buttons");
+            var addBtn = document.createElement("BUTTON");
+            var addTxt = document.createTextNode("Add");
+            var getItem = document.createElement("BUTTON");
+            var gTxt = document.createTextNode("Get");
+            var input = document.createElement('input');
+            var updateItem = document.createElement("BUTTON");
+            var uT = document.createTextNode("Update");
+            var input2 = document.createElement('input2');
+            var deleteItem = document.createElement("BUTTON");
+            var dT = document.createTextNode("Delete");
+            var input3 = document.createElement('input3');
+            var getAllItems = document.createElement("BUTTON");
+            var gA = document.createTextNode("Get All");
+            input.type = "text";
+            input2.type = "text";
+            input3.type = "text";
+         
+            getItem.appendChild(gTxt); //add the get and add buttons
+            addBtn.appendChild(addTxt);
+            updateItem.appendChild(uT);
+            deleteItem.appendChild(dT);
+            getAllItems.appendChild(gA);
+
+            yup.appendChild(addBtn);
+            yup.appendChild(document.createElement("br"));
+            yup.appendChild(getItem);
+            yup.appendChild(input);
+            yup.appendChild(document.createElement("br"));
+            yup.appendChild(updateItem);
+            yup.appendChild(input2);
+            yup.appendChild(document.createElement("br"));
+            yup.appendChild(deleteItem);    
+            yup.appendChild(input3);
+            yup.appendChild(document.createElement("br"));
+            yup.appendChild(getAllItems);
+
+            
+            
+            addBtn.addEventListener("click", addItem); //add listeners
+            getItem.addEventListener("click", getIT);
+            updateItem.addEventListener("click", updateI);
+            deleteItem.addEventListener("click", onDelete);
+            getAllItems.addEventListener("click",setInterval);
+
+
+           
+            
+            function addItem(){//adds an item to the database
+                var http = new XMLHttpRequest(); //set up the request
+                var url = 'mongodb+srv://milespitassi:rebo2323@please-lfujg.mongodb.net/test?retryWrites=true&w=majority';
+                var params;
+                var item = prompt("What item would you like to add?");
+                
+                
+                if (item != null && item != "") {//verify user input
+                    var type = prompt("What is the type of the item (book or cd)?");
+                    
+                    if(type == "book" || type == "cd"){//verify input
+                        var q = prompt("Set the quantity: ");
+                        
+                        if(q != null && !isNaN(q)){
+                            var option = prompt("Would you like to include a loan period");
+                            if(option == "y" || option == "yes" || option == "Yes"){
+                                var loanperiod = prompt("Set the loan period: ");
+                                if(q != null && !isNaN(loanperiod)){
+                                    params = 'name=' + item + '&type=' + type + '&loanperiod=' + loanperiod + '&quantity=' + q;
+                                    
+                                    http.open('POST', url, true);
+                    
+                                    http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                    
+                                    http.onreadystatechange = function() {//Call a function when the state changes.
+                                        if(http.readyState == 4 && http.status == 200) {
+                                            alert(http.responseText);
+                                        }
+                                    }
+                                    http.send(params);
+                                }
+                                else
+                                    alert("Please enter a valid input");
+                            }else if(option == "No" || option == "n" || option == "no"){
+                                params = 'name=' + item + '&type=' + type + '&quantity=' + q;
+                                    
+                                http.open('POST', url, true);
+                    
+                                http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                    
+                                http.onreadystatechange = function() {//Call a function when the state changes.
+                                    if(http.readyState == 4 && http.status == 200) {
+                                        alert(http.responseText);
+                                    }
+                                }
+                                http.send(params);
+                            }else
+                                alert("Please enter yes or no");
+                                
+                        }
+                        else
+                          alert("Please enter a valid input");  
+                    }
+                    else
+                        alert("Please enter a valid input");
+                }
+                else
+                    alert("Please enter an item name");
+                
+                
+              
+                
+            }
+            
+            function onDelete(){//called for a deletion of a specify item
+                var itemID = this.id;
+                var http = new XMLHttpRequest();
+                var url = 'mongodb+srv://milespitassi:rebo2323@please-lfujg.mongodb.net/test?retryWrites=true&w=majority' + itemID;
+                http.open('DELETE', url, true);
+                
+                http.onreadystatechange = function() {//Call a function when the state changes.
+                    if(http.readyState == 4 && http.status == 200) {
+                        alert(http.responseText);
+                    }
+                }
+                
+                http.send(null);
+                
+                var element = document.getElementById(this.id);
+                element.parentNode.removeChild(element);
+            }
+            
+            setInterval(function getAll(){//continously gets all items
+                var items;
+                var http = new XMLHttpRequest();
+                var url = 'mongodb+srv://milespitassi:rebo2323@please-lfujg.mongodb.net/test?retryWrites=true&w=majority';
+                
+                http.open('GET', url, true);
+                
+                var list = document.getElementById("inventory");
+                
+                    
+                
+                http.onreadystatechange = function() {//Call a function when the state changes.
+                    if(http.readyState == 4 && http.status == 200) {
+                        items = JSON.parse(http.response);
+                        
+                        if(list.childNodes[0] != null){
+                            while (list.firstChild) {
+                            list.removeChild(list.firstChild);
+                            }
+                        }
+                        
+                        for(var j = 0; j < items.length; j++){
+                            var listIt = document.createElement("li");
+                            var dltBtn = document.createElement("BUTTON");
+                            var update = document.createElement("BUTTON");
+                            var dTxt = document.createTextNode("Delete");
+                            var upTxt = document.createTextNode("Update");
+                            dltBtn.appendChild(dTxt);
+                            update.appendChild(upTxt);
+                            dltBtn.addEventListener("click", onDelete);
+                            update.addEventListener("click", updateI);
+                            listIt.appendChild(document.createTextNode(items[j].name));
+                            listIt.appendChild(dltBtn);
+                            listIt.appendChild(update);
+                            listIt.appendChild(document.createElement("br"));
+                            listIt.appendChild(document.createTextNode("Type = " + items[j].type));
+                            listIt.appendChild(document.createElement("br"));
+                            listIt.appendChild(document.createTextNode("Loan Period = " + items[j].loanperiod));
+                            listIt.appendChild(document.createElement("br"));
+                            listIt.appendChild(document.createTextNode("Quantity = " + items[j].quantity));
+                            list.appendChild(listIt);
+                            listIt.id = items[j]._id;
+                            dltBtn.id = items[j]._id;
+                            update.id = items[j]._id;
+                        }
+                    }
+                }
+                
+                http.send(null);
+            }, 2000);
+            
+            function updateI(){
+                var itemID = this.id;
+                var http = new XMLHttpRequest();
+                var url = 'mongodb+srv://milespitassi:rebo2323@please-lfujg.mongodb.net/test?retryWrites=true&w=majority' + itemID;
+                var params;
+                var name;
+                var type;
+                var q;
+                var loanperiod;
+                
+                var item = prompt("What attribute would you like to change ?");
+                
+                
+                switch(item){
+                    case "loan" || "loan period" || "loanperiod":
+                        var t = prompt("What do you want to change it to ?");
+                        if(!isNaN(t)){
+                            loanperiod = t;
+                            params = 'loanperiod=' + loanperiod;
+                        }else
+                            alert("Please enter a valid input");
+                        break;
+                    case "quantity" || "Quantity":
+                        var quan = prompt("What do you want to change it to ?");
+                        if(!isNaN(quan)){
+                            q = quan;
+                            params = 'quantity=' + q;
+                        }else
+                            alert("Please enter a valid input");
+                        break;
+                    default:
+                        alert("That is not one of the options!");
+                }
+                
+                
+                http.open('PUT', url, true);
+                
+                http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                
+                http.onreadystatechange = function() {//Call a function when the state changes.
+                    if(http.readyState == 4 && http.status == 200) {
+                        alert(http.responseText);
+                    }
+                }
+                
+                http.send(params);
+              
+            }
+            
+            function getIT(){
+                var items;
+                var item;
+                var itemID;
+                var http = new XMLHttpRequest();
+                var url = 'mongodb+srv://milespitassi:rebo2323@please-lfujg.mongodb.net/test?retryWrites=true&w=majority';
+                
+                http.open('GET', url, true);
+                
+                http.onreadystatechange = function() {//Call a function when the state changes.
+                    if(http.readyState == 4 && http.status == 200) {
+                        items = JSON.parse(http.response);
+                    
+                    
+                        for(var j = 0; j < items.length; j++){
+                           if(items[j].name == input.value)
+                                itemID = items[j]._id;
+                        }
+                        
+                        var httpyeet = new XMLHttpRequest();
+                        
+                        var newurl = 'mongodb+srv://milespitassi:rebo2323@please-lfujg.mongodb.net/test?retryWrites=true&w=majority' + itemID;
+                       
+                        httpyeet.open('GET', newurl, true);
+                    
+                        httpyeet.onreadystatechange = function() {//Call a function when the state changes.
+                            if(httpyeet.readyState == 4 && httpyeet.status == 200) {
+                                 if(div.childNodes[0] != null){
+                                    while (div.firstChild) {
+                                    div.removeChild(div.firstChild);
+                                    }
+                                }
+                                item = JSON.parse(httpyeet.response);
+                                
+                                div.appendChild(document.createElement("br"));
+                                div.appendChild(document.createTextNode(item.name));
+                                div.appendChild(document.createElement("br"));
+                                div.appendChild(document.createTextNode("Type = " + item.type));
+                                div.appendChild(document.createElement("br"));
+                                div.appendChild(document.createTextNode("Loan Period = " + item.loanperiod));
+                                div.appendChild(document.createElement("br"));
+                                div.appendChild(document.createTextNode("Quantity = " + item.quantity));
+                                    
+                            }
+                            
+                           
+                        }
+                    
+                        httpyeet.send(null);
+                    }
+                }
+                
+                http.send(null);
+            }
+    </script>
+</html>
